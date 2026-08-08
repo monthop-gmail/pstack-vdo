@@ -31,7 +31,7 @@ export PSTACK_ADDONS_PATHS=../pstack/addons,vdo_addons
 ## Docker
 
 ```bash
-cp .env.example .env    # ตั้ง PSTACK_REF, GIT_TOKEN (ถ้า pstack ยัง private), รหัสต่างๆ
+cp .env.example .env    # ตั้ง PSTACK_REF และรหัสต่างๆ
 docker compose up -d --build
 ```
 
@@ -40,8 +40,7 @@ image ติดตั้ง **ffmpeg** ให้แล้ว — worker เป�
 
 ## CI
 
-ต้องมี secret **`PSTACK_CLONE_TOKEN`** (PAT อ่าน repo pstack) — workflow จะ clone pstack
-ตาม `PSTACK_REF` ใน `.env.example` แล้วรันเทส
+workflow จะ clone pstack ตาม `PSTACK_REF` ใน `.env.example` แล้วรันเทสอัตโนมัติ
 
 ## กติกา
 

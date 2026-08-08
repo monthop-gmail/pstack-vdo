@@ -4,7 +4,6 @@ services:
       context: .
       args:
         PSTACK_REF: ${PSTACK_REF:-v0.1.0}
-        GIT_TOKEN: ${GIT_TOKEN:-}
     restart: unless-stopped
     env_file: .env
     ports:
@@ -27,7 +26,6 @@ services:
       context: .
       args:
         PSTACK_REF: ${PSTACK_REF:-v0.1.0}
-        GIT_TOKEN: ${GIT_TOKEN:-}
     restart: unless-stopped
     command: arq core.worker.WorkerSettings
     env_file: .env
