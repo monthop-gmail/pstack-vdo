@@ -1,56 +1,50 @@
-# pstack app template
+# pstack-vdo
 
-แม่แบบสำหรับสร้าง app ใหม่บนฐาน [pstack](https://github.com/monthop-gmail/pstack) —
-app repo เก็บเฉพาะ addons ของตัวเอง แล้ว **pin pstack เป็น tag** (`PSTACK_REF`)
+Video streaming server บนฐาน [pstack](https://github.com/monthop-gmail/pstack) (pin `PSTACK_REF=v0.1.0`)
+— สร้างจาก [pstack-app-template](https://github.com/monthop-gmail/pstack-app-template)
 
-## เริ่ม app ใหม่
+## โมดูล `vdo`
 
-1. กด **Use this template** บน GitHub → ตั้งชื่อ repo เช่น `pstack-lms`
-2. clone ลงเครื่อง แล้วเปลี่ยนชื่อโฟลเดอร์ addons ให้เป็นของ app ตัวเอง (ห้ามใช้ชื่อ `addons` เพราะชนกับของ pstack):
-
-```bash
-NEW=lms_addons   # ตั้งตามชื่อ app
-git mv app_addons $NEW
-grep -rl app_addons --exclude-dir=.git . | xargs sed -i "s/app_addons/$NEW/g"
-```
-
-3. เปลี่ยนชื่อโมดูลตัวอย่าง `demo` เป็นโมดูลจริงของคุณ (ดูวิธีเขียนโมดูลใน
-   [MODULE_GUIDE](https://github.com/monthop-gmail/pstack/blob/main/docs/MODULE_GUIDE.md))
-4. `cp .env.example .env` แล้วตั้งค่า
+- **อัปโหลดวิดีโอ** — `POST /api/vdo/videos` (ต่อยอดโมดูล `storage` ของ pstack)
+- **Transcode เป็น HLS** ด้วย ffmpeg ผ่าน ARQ worker (งานหนัก CPU แยกโปรเซส):
+  `uploaded → processing → ready | error`
+- **เสิร์ฟ HLS** — dev: `/hls/{video_id}/index.m3u8`; production ให้ Caddy/nginx
+  เสิร์ฟโฟลเดอร์ `hls/` ตรงๆ ไม่ผ่าน FastAPI
+- **AI tools** — `search_videos` (สาธารณะ — ถามผ่าน LINE/MCP ได้),
+  `video_pipeline_status` (ต้องมีสิทธิ์ `vdo.manage`)
 
 ## Dev บนเครื่อง
 
-ต้องมี pstack checkout ไว้ข้างๆ (pin tag เดียวกับ `PSTACK_REF` ใน .env.example):
+ต้องมี pstack checkout ไว้ข้างๆ (tag ตรงกับ `PSTACK_REF` ใน .env.example):
 
 ```bash
 git clone --branch v0.1.0 https://github.com/monthop-gmail/pstack.git ../pstack
 python3 -m venv .venv && .venv/bin/pip install -e "../pstack[dev]"
 
-export PSTACK_ADDONS_PATHS=../pstack/addons,app_addons
+export PSTACK_ADDONS_PATHS=../pstack/addons,vdo_addons
+.venv/bin/python -m pytest tests/            # เทส (sqlite ไม่ต้องมี DB/redis/ffmpeg)
 .venv/bin/uvicorn main:app --reload          # dev server
-.venv/bin/python -m pytest tests/            # เทส (sqlite)
 ```
 
-สร้าง migration ของโมดูล: `.venv/bin/python ../pstack/cli.py makemigration <module> -m "..."`
-(รันจาก root ของ repo นี้ โดยตั้ง PSTACK_ADDONS_PATHS ตามด้านบน)
+สร้าง migration เมื่อแก้ models: `.venv/bin/python ../pstack/cli.py makemigration vdo -m "..."`
 
 ## Docker
 
 ```bash
+cp .env.example .env    # ตั้ง PSTACK_REF, GIT_TOKEN (ถ้า pstack ยัง private), รหัสต่างๆ
 docker compose up -d --build
 ```
 
-Dockerfile จะ clone pstack ตาม `PSTACK_REF` ใน `.env` — ถ้า pstack ยังเป็น private repo
-ให้ใส่ `GIT_TOKEN` (fine-grained PAT ที่อ่าน repo pstack ได้) ใน `.env` ด้วย
+image ติดตั้ง **ffmpeg** ให้แล้ว — worker เป็นคนรัน transcode
+(ไม่มี worker/redis วิดีโอจะค้างสถานะ `uploaded`)
 
 ## CI
 
-workflow จะ clone pstack ตาม `PSTACK_REF` ใน `.env.example` — สำหรับ private repo
-ต้องเพิ่ม secret ชื่อ **`PSTACK_CLONE_TOKEN`** (PAT อ่าน pstack ได้) ใน Settings → Secrets
+ต้องมี secret **`PSTACK_CLONE_TOKEN`** (PAT อ่าน repo pstack) — workflow จะ clone pstack
+ตาม `PSTACK_REF` ใน `.env.example` แล้วรันเทส
 
-## กติกาสำคัญ
+## กติกา
 
-- **ห้ามแก้โค้ด pstack ใน repo นี้** — อยากได้อะไรจาก kernel ให้ไปทำฝั่ง pstack แล้วออก tag ใหม่
-- อัปเกรด `PSTACK_REF` เป็นรอบๆ ใน PR เดียว อ่าน breaking changes จาก
-  [CHANGELOG ของ pstack](https://github.com/monthop-gmail/pstack/blob/main/CHANGELOG.md) ก่อนเสมอ
-- deploy บนเซิร์ฟเวอร์รวม: เปิด network `odoo-public` ใน docker-compose.yml เพื่ออยู่หลัง Caddy กลาง
+- ห้ามแก้โค้ด pstack ใน repo นี้ — อยากได้อะไรจาก kernel ไปทำฝั่ง pstack แล้วออก tag ใหม่
+- อัปเกรด `PSTACK_REF` เป็นรอบๆ ใน PR เดียว อ่าน
+  [CHANGELOG ของ pstack](https://github.com/monthop-gmail/pstack/blob/main/CHANGELOG.md) ก่อน
