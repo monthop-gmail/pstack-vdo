@@ -1,7 +1,7 @@
 # pstack-vdo
 
-Video streaming server บนฐาน [pstack](https://github.com/monthop-gmail/pstack) (pin `PSTACK_REF=v0.1.0`)
-— สร้างจาก [pstack-app-template](https://github.com/monthop-gmail/pstack-app-template)
+Video streaming server บนฐาน [pstack](https://github.com/willpower-institute/pstack) (pin `PSTACK_REF=v0.1.0`)
+— สร้างจาก [pstack-app-template](https://github.com/willpower-institute/pstack-app-template)
 
 ## โมดูล `vdo`
 
@@ -18,7 +18,7 @@ Video streaming server บนฐาน [pstack](https://github.com/monthop-gmail
 ต้องมี pstack checkout ไว้ข้างๆ (tag ตรงกับ `PSTACK_REF` ใน .env.example):
 
 ```bash
-git clone --branch v0.1.0 https://github.com/monthop-gmail/pstack.git ../pstack
+git clone --branch v0.1.0 https://github.com/willpower-institute/pstack.git ../pstack
 python3 -m venv .venv && .venv/bin/pip install -e "../pstack[dev]"
 
 export PSTACK_ADDONS_PATHS=../pstack/addons,vdo_addons
@@ -46,4 +46,4 @@ workflow จะ clone pstack ตาม `PSTACK_REF` ใน `.env.example` แล
 
 - ห้ามแก้โค้ด pstack ใน repo นี้ — อยากได้อะไรจาก kernel ไปทำฝั่ง pstack แล้วออก tag ใหม่
 - อัปเกรด `PSTACK_REF` เป็นรอบๆ ใน PR เดียว อ่าน
-  [CHANGELOG ของ pstack](https://github.com/monthop-gmail/pstack/blob/main/CHANGELOG.md) ก่อน
+  [CHANGELOG ของ pstack](https://github.com/willpower-institute/pstack/blob/main/CHANGELOG.md) ก่อน

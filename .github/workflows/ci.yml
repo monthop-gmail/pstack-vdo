@@ -19,7 +19,7 @@ jobs:
           PSTACK_REF=$(grep '^PSTACK_REF=' .env.example | cut -d= -f2)
           echo "pinning pstack @ $PSTACK_REF"
           git clone --depth 1 --branch "$PSTACK_REF" \
-            https://github.com/monthop-gmail/pstack.git pstack_src
+            https://github.com/willpower-institute/pstack.git pstack_src
 
       - name: Install
         run: pip install -e "./pstack_src[dev]"

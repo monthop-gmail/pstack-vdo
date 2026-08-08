@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends git ffmpeg \
 
 # ดึง pstack ตาม tag ที่ pin
 RUN git clone --depth 1 --branch "${PSTACK_REF}" \
-        https://github.com/monthop-gmail/pstack.git /app \
+        https://github.com/willpower-institute/pstack.git /app \
     && rm -rf /app/.git
 
 WORKDIR /app
